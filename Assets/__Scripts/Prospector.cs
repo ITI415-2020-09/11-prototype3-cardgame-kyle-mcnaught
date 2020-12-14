@@ -388,7 +388,7 @@ public class Prospector : MonoBehaviour {
         SceneManager.LoadScene("__Prospector_Scene_0");
     }
 
-    // Return true if the two cards are EqualToThirteen in rank (A & K wrap around)
+    // Return true if the two cards are EqualToThirteen in rank 
     public bool EqualToThirteenRank(CardProspector c0, CardProspector c1)
     {
         // If either card is face-down, it's not EqualToThirteen.
@@ -399,7 +399,7 @@ public class Prospector : MonoBehaviour {
         {
             return (true);
         }
-        if (c0.rank == 13) return (true);
+        if (c0.rank == 13) MoveToDiscard(c0);
         //if (c0.rank == 13 && c1.rank == 1) return (true);
 
         //Otherwise, return false
