@@ -291,13 +291,6 @@ public class Prospector : MonoBehaviour {
                 FloatingScoreHandler(eScoreEvent.mine);
                 break;
                 
-                if(target == 13){
-                	MoveToDiscard(target); // Moves the target to the discardPile
-	                MoveToTarget(Draw());  // Moves the next drawn card to the target
-	                UpdateDrawPile();      // Restacks the drawPile
-	                ScoreManager.EVENT(eScoreEvent.draw);
-	                break;
-                }
         }
         // Check to see whether the game is over or not
         CheckForGameOver();
@@ -306,13 +299,31 @@ public class Prospector : MonoBehaviour {
     // Test whether the game is over
     void CheckForGameOver()
     {
-        // If the tableau is empty, the game is over
-        if (tableau.Count == 0)
+        if (tableau.Count == 0 && drawPile.Count == 0)
         {
             // Call GameOver() with a win
             GameOver(true);
             return;
         }
+        
+        
+        
+        // If the tableau is empty, the game is over
+        if (tableau.Count == 0)
+        {
+            // Call GameOver() with a win
+            GameOver(false);
+            return;
+        }
+        
+        if (drawPile.Count == 0)
+        {
+            // Call GameOver() with a win
+            GameOver(false);
+            return;
+        }
+        
+        
 
         // If there are still cards in the draw pile, the game's not over
         if (drawPile.Count > 0)
