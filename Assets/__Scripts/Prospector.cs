@@ -26,6 +26,7 @@ public class Prospector : MonoBehaviour {
     public Deck deck;
     public Layout layout;
     public List<CardProspector> drawPile;
+    public List<CardProspector> wastePile;
     public Transform layoutAnchor;
     public CardProspector target;
     public List<CardProspector> tableau;
@@ -191,7 +192,18 @@ public class Prospector : MonoBehaviour {
             cd.faceUp = faceUp; // Set the value on the card
         }
     }
-
+	
+	void MoveToWaste(CardProspector cd)
+    {
+    	 cd.state = eCardState.waste;
+    	 wastePile.Add(cd);
+    	 cd.transform.parent = layoutAnchor;
+    	 
+    	 cd.transform.localPosition = new Vector3(layout.multiplier.x * layout.drawPile.x , layout.multiplier.y * layout.drawPile.y - 5, -layout.drawPile.layerID + .01f);
+    	 cd.faceUp = true;
+    	 cd.SetSortingLayerName(layout.drawPile.layerName);
+    }
+	
     // Moves the current target to the discardPile
     void MoveToDiscard(CardProspector cd)
     {
@@ -212,7 +224,7 @@ public class Prospector : MonoBehaviour {
     void MoveToTarget(CardProspector cd)
     {
         // If there is currently a target card, move it to discardPile
-        if (target != null) MoveToDiscard(target);
+        if (target != null) MoveToWaste(target);
         target = cd; // cd is the new target
         cd.state = eCardState.target;
         cd.transform.parent = layoutAnchor;
@@ -257,7 +269,7 @@ public class Prospector : MonoBehaviour {
 
             case eCardState.drawpile:
                 // Clicking any card in the drawPile will draw the next card
-                MoveToDiscard(target); // Moves the target to the discardPile
+                MoveToWaste(target); // Moves the target to the discardPile
                 MoveToTarget(Draw()); // Moves the next drawn card to the target
                 UpdateDrawPile(); // Restacks the drawPile
                 ScoreManager.EVENT(eScoreEvent.draw);
@@ -299,32 +311,13 @@ public class Prospector : MonoBehaviour {
     // Test whether the game is over
     void CheckForGameOver()
     {
-        if (tableau.Count == 0 && drawPile.Count == 0)
+        if (tableau.Count == 0)
         {
             // Call GameOver() with a win
             GameOver(true);
             return;
         }
         
-        
-        
-        // If the tableau is empty, the game is over
-        if (tableau.Count == 0)
-        {
-            // Call GameOver() with a win
-            GameOver(false);
-            return;
-        }
-        
-        if (drawPile.Count == 0)
-        {
-            // Call GameOver() with a win
-            GameOver(false);
-            return;
-        }
-        
-        
-
         // If there are still cards in the draw pile, the game's not over
         if (drawPile.Count > 0)
         {
