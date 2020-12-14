@@ -272,9 +272,9 @@ public class Prospector : MonoBehaviour {
                     // If the card is face-down, it's not valid
                     validMatch = false;
                 }
-                if(!AdjacentRank(cd, target))
+                if(!EqualToThirteenRank(cd, target))
                 {
-                    // If it's not an adjacent rank, it's not valid
+                    // If it's not an EqualToThirteen rank, it's not valid
                     validMatch = false;
                 }
                 if (!validMatch) return; // return if not valid
@@ -282,10 +282,22 @@ public class Prospector : MonoBehaviour {
                 // If we got here then it's a valid card
                 tableau.Remove(cd); // Remove it from the tableau List
                 MoveToTarget(cd); // Make it the target card
+                MoveToDiscard(target); // Moves the target to the discardPile
+                MoveToTarget(Draw());  // Moves the next drawn card to the target
+                UpdateDrawPile();      // Restacks the drawPile
+                ScoreManager.EVENT(eScoreEvent.draw);
                 SetTableauFaces(); // Update tableau card face-ups
                 ScoreManager.EVENT(eScoreEvent.mine);
                 FloatingScoreHandler(eScoreEvent.mine);
                 break;
+                
+                if(target == 13){
+                	MoveToDiscard(target); // Moves the target to the discardPile
+	                MoveToTarget(Draw());  // Moves the next drawn card to the target
+	                UpdateDrawPile();      // Restacks the drawPile
+	                ScoreManager.EVENT(eScoreEvent.draw);
+	                break;
+                }
         }
         // Check to see whether the game is over or not
         CheckForGameOver();
@@ -311,7 +323,7 @@ public class Prospector : MonoBehaviour {
         // Check for remaining valid plays 
         foreach (CardProspector cd in tableau)
         {
-            if (AdjacentRank(cd, target))
+            if (EqualToThirteenRank(cd, target))
             {
                 // If there is a valid play, the game's not over
                 return;
@@ -365,20 +377,19 @@ public class Prospector : MonoBehaviour {
         SceneManager.LoadScene("__Prospector_Scene_0");
     }
 
-    // Return true if the two cards are adjacent in rank (A & K wrap around)
-    public bool AdjacentRank(CardProspector c0, CardProspector c1)
+    // Return true if the two cards are EqualToThirteen in rank (A & K wrap around)
+    public bool EqualToThirteenRank(CardProspector c0, CardProspector c1)
     {
-        // If either card is face-down, it's not adjacent.
+        // If either card is face-down, it's not EqualToThirteen.
         if (!c0.faceUp || !c1.faceUp) return (false);
 
-        // If they are 1 apart, they are adjacent
-        if (Mathf.Abs(c0.rank - c1.rank) == 1)
+        // If they are 1 apart, they are EqualToThirteen
+        if (Mathf.Abs(c0.rank + c1.rank) == 13)
         {
             return (true);
         }
-        // If one is Ace and the other King, they are adjacent
-        if (c0.rank == 1 && c1.rank == 13) return (true);
-        if (c0.rank == 13 && c1.rank == 1) return (true);
+        if (c0.rank == 13) return (true);
+        //if (c0.rank == 13 && c1.rank == 1) return (true);
 
         //Otherwise, return false
         return (false);
