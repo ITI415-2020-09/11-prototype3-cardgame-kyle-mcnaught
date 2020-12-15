@@ -151,6 +151,10 @@ public class Prospector : MonoBehaviour {
                 tCP.hiddenBy.Add(cp);
             }
         }
+        
+        //CardProspector Waste() {
+        	
+        //}
 
         // Set up the initial target card
         MoveToTarget(Draw());
@@ -197,11 +201,13 @@ public class Prospector : MonoBehaviour {
     {
     	 cd.state = eCardState.waste;
     	 wastePile.Add(cd);
+    	 
     	 cd.transform.parent = layoutAnchor;
     	 
     	 cd.transform.localPosition = new Vector3(layout.multiplier.x * layout.drawPile.x , layout.multiplier.y * layout.drawPile.y - 5, -layout.drawPile.layerID + .01f);
     	 cd.faceUp = true;
     	 cd.SetSortingLayerName(layout.drawPile.layerName);
+    	 cd.SetSortOrder(-100+(wastePile.Count * 5));
     }
 	
     // Moves the current target to the discardPile
@@ -223,7 +229,7 @@ public class Prospector : MonoBehaviour {
     // Make cd the new target card
     void MoveToTarget(CardProspector cd)
     {
-        // If there is currently a target card, move it to discardPile
+        // If there is currently a target card, move it to wastePile
         if (target != null) MoveToWaste(target);
         target = cd; // cd is the new target
         cd.state = eCardState.target;
@@ -234,6 +240,7 @@ public class Prospector : MonoBehaviour {
         // Set the depth sorting
         cd.SetSortingLayerName(layout.discardPile.layerName);
         cd.SetSortOrder(0);
+        
     }
 
     // Arranges all the cards of the drawPile to show how many are left
@@ -264,9 +271,18 @@ public class Prospector : MonoBehaviour {
         switch (cd.state)
         {
             case eCardState.target:
-                // Clicking the target card does nothing
-                break;
-
+	            if(EqualToThirteenRank(target, target)){
+	            	MoveToDiscard(target);
+	            	MoveToTarget(Draw()); // Moves the next drawn card to the target
+	                UpdateDrawPile(); // Restacks the drawPile
+	                ScoreManager.EVENT(eScoreEvent.draw);
+	                FloatingScoreHandler(eScoreEvent.draw);
+	                }
+	                break;
+	            if(!EqualToThirteenRank(target, target)){
+	            	break;
+	                }
+                
             case eCardState.drawpile:
                 // Clicking any card in the drawPile will draw the next card
                 MoveToWaste(target); // Moves the target to the discardPile
@@ -275,10 +291,36 @@ public class Prospector : MonoBehaviour {
                 ScoreManager.EVENT(eScoreEvent.draw);
                 FloatingScoreHandler(eScoreEvent.draw);
                 break;
-
+			
+			case eCardState.waste:
+				bool validMatch = true;
+                if (!cd.faceUp)
+                {
+                    // If the card is face-down, it's not valid
+                    validMatch = false;
+                }
+                if(!EqualToThirteenRank(cd, target))
+                {
+                    // If it's not an EqualToThirteen rank, it's not valid
+                    validMatch = false;
+                }
+                if (!validMatch) return; // return if not valid
+                
+                wastePile.Remove(cd);
+                MoveToTarget(cd);
+                MoveToDiscard(target);
+                MoveToDiscard(cd);
+                MoveToTarget(Draw());  // Moves the next drawn card to the target
+                UpdateDrawPile();      // Restacks the drawPile
+                ScoreManager.EVENT(eScoreEvent.draw);
+                ScoreManager.EVENT(eScoreEvent.mine);
+                FloatingScoreHandler(eScoreEvent.mine);
+                break;
+                
+			
             case eCardState.tableau:
                 // Clicking a card in the tableau will check if it's a valid play
-                bool validMatch = true;
+                validMatch = true;
                 if (!cd.faceUp)
                 {
                     // If the card is face-down, it's not valid
